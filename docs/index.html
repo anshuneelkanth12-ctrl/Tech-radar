@@ -1,0 +1,888 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Tech Radar</title>
+<meta name="description" content="A self-updating tracker for new gadgets, accessories, prices and the tech stories several outlets are covering.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%93%A1%3C/text%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,100..900&display=swap">
+<style>
+:root {
+  --bg: #E7ECF1;
+  --surface: #F6F8FA;
+  --ink: #132033;
+  --ink-2: #2B3B52;
+  --muted: #586579;
+  --rule: #CAD3DD;
+  --rule-strong: #96A4B6;
+  --accent: #1D4ED8;
+  --tag: #F2C230;
+  --tag-ink: #231A00;
+  --star: #9A7200;
+  --down: #0D7650;
+  --up: #B42318;
+  --note-bg: #FFF1C7;
+  --note-ink: #4D3A00;
+  --font: "Archivo", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  color-scheme: light;
+  box-sizing: border-box;
+  padding-top: env(safe-area-inset-top, 0px);
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #111821; --surface: #18212C; --ink: #E4EAF1; --ink-2: #C7D1DD; --muted: #95A2B3;
+    --rule: #283444; --rule-strong: #455469; --accent: #8EB1FF; --star: #F2C230;
+    --down: #4CC79A; --up: #FF8C82; --note-bg: #352B10; --note-ink: #F3DD9C; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #111821; --surface: #18212C; --ink: #E4EAF1; --ink-2: #C7D1DD; --muted: #95A2B3;
+  --rule: #283444; --rule-strong: #455469; --accent: #8EB1FF; --star: #F2C230;
+  --down: #4CC79A; --up: #FF8C82; --note-bg: #352B10; --note-ink: #F3DD9C; color-scheme: dark;
+}
+*, *::before, *::after { box-sizing: inherit; }
+html { scroll-padding-top: env(safe-area-inset-top, 0px); -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
+body { margin: 0; background: var(--bg); color: var(--ink); font-family: var(--font); font-size: 15.5px; line-height: 1.5; font-stretch: 100%; }
+body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); background: var(--bg); z-index: 10; }
+a { color: inherit; text-underline-offset: 0.18em; }
+a:hover { color: var(--accent); }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+button, input, select { font: inherit; }
+.wrap { max-width: 1180px; margin: 0 auto; padding-left: clamp(14px, 3vw, 28px); padding-right: clamp(14px, 3vw, 28px); }
+.muted { color: var(--muted); }
+.small { font-size: 12.5px; }
+.plain { text-decoration: none; }
+
+/* Masthead */
+.mast { display: grid; grid-template-columns: minmax(0, 1fr) minmax(220px, 360px); align-items: end; gap: 10px 28px; padding: 26px 0 4px; }
+.brand { margin: 0; font-size: clamp(36px, 6.4vw, 62px); line-height: 0.9; font-weight: 830; font-stretch: 125%; letter-spacing: -0.015em; }
+.search { width: 100%; padding: 10px 12px; border: 1px solid var(--rule-strong); border-radius: 6px; background: var(--surface); color: var(--ink); font-size: 15px; }
+.search::placeholder { color: var(--muted); }
+.status-line { grid-column: 1 / -1; display: flex; flex-wrap: wrap; gap: 4px 22px; margin: 6px 0 0; color: var(--muted); font-size: 13.5px; font-stretch: 88%; }
+.status-line b { color: var(--ink); font-weight: 650; }
+.dot { display: inline-block; width: 8px; height: 8px; margin-right: 6px; border-radius: 50%; background: var(--down); vertical-align: 1px; }
+.dot.warn { background: var(--tag); }
+.dot.bad { background: var(--up); }
+.note { margin: 12px 0 0; padding: 10px 14px; border-radius: 6px; background: var(--note-bg); color: var(--note-ink); font-size: 14px; max-width: 92ch; }
+@media (max-width: 760px) { .mast { grid-template-columns: minmax(0, 1fr); } }
+
+/* Tabs */
+.tabs { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5; margin-top: 12px; background: var(--bg); border-bottom: 1px solid var(--rule-strong); }
+.tabs nav { display: flex; gap: 4px; overflow-x: auto; scrollbar-width: none; }
+.tabs nav::-webkit-scrollbar { display: none; }
+.tabs a { margin-bottom: -1px; padding: 11px 12px 9px; border-bottom: 3px solid transparent; color: var(--muted); font-weight: 640; font-stretch: 92%; text-decoration: none; white-space: nowrap; }
+.tabs a:hover { color: var(--ink); }
+.tabs a[aria-current="page"] { color: var(--ink); border-bottom-color: var(--ink); }
+.tabs .n { margin-left: 5px; color: var(--muted); font-size: 12.5px; font-weight: 500; font-variant-numeric: tabular-nums; }
+
+/* Sections */
+.view { padding: 4px 0 40px; }
+.h2 { margin: 30px 0 4px; font-size: 22px; line-height: 1.15; font-weight: 780; font-stretch: 112%; }
+.sub { margin: 0 0 14px; max-width: 74ch; color: var(--muted); font-size: 14.5px; }
+.cols { display: grid; grid-template-columns: minmax(0, 1.55fr) minmax(0, 1fr); gap: 0 44px; }
+@media (max-width: 900px) { .cols { grid-template-columns: minmax(0, 1fr); } }
+.empty { padding: 10px 0 6px; max-width: 66ch; color: var(--muted); font-size: 14.5px; }
+.empty b { display: block; margin-bottom: 2px; color: var(--ink); font-size: 16px; font-weight: 680; }
+
+/* Price tags on a rail: the one bold element */
+.shelf { display: flex; gap: 24px; overflow-x: auto; margin: 0 -6px; padding: 8px 6px 14px; scroll-snap-type: x proximity; }
+.hang { position: relative; flex: 0 0 200px; margin-top: 34px; scroll-snap-align: start; }
+.hang::after { content: ""; position: absolute; top: -31px; left: -12px; right: -12px; height: 3px; background: var(--rule-strong); }
+.hang::before { content: ""; position: absolute; top: -28px; left: 15px; width: 1.5px; height: 29px; background: var(--rule-strong); }
+.tag { --hole: var(--bg); position: relative; display: inline-flex; align-items: baseline; gap: 5px; min-height: 40px; padding: 9px 15px 9px 30px; background: var(--tag); color: var(--tag-ink); font-size: 20px; line-height: 1.1; font-weight: 780; font-stretch: 78%; font-variant-numeric: tabular-nums lining-nums; white-space: nowrap; clip-path: polygon(14px 0, 100% 0, 100% 100%, 14px 100%, 0 50%); }
+.tag::before { content: ""; position: absolute; left: 11px; top: 50%; width: 8px; height: 8px; margin-top: -4px; border-radius: 50%; background: var(--hole); }
+.tag small { font-size: 12.5px; font-weight: 600; font-stretch: 92%; }
+.tag.tba { color: var(--muted); font-size: 14px; font-weight: 620; font-stretch: 90%; background: repeating-linear-gradient(135deg, transparent 0 5px, var(--rule) 5px 6.5px); }
+.hang .tag { transform-origin: 15px 0; transform: rotate(var(--tilt, 0deg)); animation: hang-in 1.2s cubic-bezier(.28, 1.55, .5, 1) both; animation-delay: calc(var(--i, 0) * 50ms); }
+@keyframes hang-in { from { transform: rotate(-11deg); opacity: 0; } 18% { opacity: 1; } to { transform: rotate(var(--tilt, 0deg)); } }
+@media (prefers-reduced-motion: reduce) { .hang .tag { animation: none; } }
+.hang h3 { margin: 12px 0 2px; font-size: 15.5px; line-height: 1.28; font-weight: 720; }
+.hang h3 a, .soon a, .story h3 a, .item h3 a, .hn a.t { text-decoration: none; }
+.hang h3 a:hover, .soon a:hover, .story h3 a:hover, .item h3 a:hover, .hn a.t:hover { text-decoration: underline; }
+.meta-row { display: flex; flex-wrap: wrap; align-items: center; gap: 3px 10px; margin: 4px 0 0; color: var(--muted); font-size: 12.5px; font-stretch: 90%; }
+
+/* Status chips */
+.status { display: inline-block; padding: 1px 7px; border: 1px solid currentColor; border-radius: 3px; font-size: 12px; font-weight: 650; font-stretch: 90%; line-height: 1.5; white-space: nowrap; }
+.status.launched { background: var(--ink); border-color: var(--ink); color: var(--bg); }
+.status.onsale { color: var(--down); }
+.status.upcoming { color: var(--accent); }
+.status.rumor { color: var(--muted); border-style: dashed; }
+.status.flag { color: var(--ink-2); border-color: var(--rule-strong); }
+
+/* Big stories */
+.stories, .hn, .soon, .saved { list-style: none; margin: 0; padding: 0; }
+.stories, .hn { border-top: 1px solid var(--rule); }
+.story { display: grid; grid-template-columns: 64px minmax(0, 1fr); gap: 4px 16px; padding: 14px 0; border-bottom: 1px solid var(--rule); }
+.meter { display: flex; align-items: flex-end; gap: 3px; height: 26px; }
+.meter i { width: 6px; border-radius: 1px; background: var(--ink); }
+.meter i.off { background: var(--rule); }
+.count { margin-top: 5px; color: var(--muted); font-size: 12px; font-stretch: 88%; font-variant-numeric: tabular-nums; }
+.story h3 { margin: 0; font-size: 17px; line-height: 1.3; font-weight: 720; }
+.outlets { margin: 3px 0 0; color: var(--muted); font-size: 13.5px; }
+.actions-row { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 16px; margin-top: 6px; font-size: 13.5px; }
+.actions-row details[open] { flex-basis: 100%; order: 3; }
+details > summary { color: var(--accent); cursor: pointer; }
+.arts { margin: 4px 0 6px; padding-left: 18px; font-size: 14px; }
+.arts li { margin: 4px 0; }
+.link-btn { padding: 0; border: 0; background: none; color: var(--accent); font-size: 13.5px; cursor: pointer; }
+.link-btn:hover { text-decoration: underline; }
+
+/* Hacker News */
+.hn li { display: grid; grid-template-columns: 54px minmax(0, 1fr); gap: 2px 12px; padding: 11px 0; border-bottom: 1px solid var(--rule); }
+.pts { font-size: 17px; line-height: 1.1; font-weight: 780; font-stretch: 80%; font-variant-numeric: tabular-nums; }
+.pts small { display: block; color: var(--muted); font-size: 11.5px; font-weight: 500; font-stretch: 90%; }
+.hn a.t { font-weight: 620; line-height: 1.3; }
+.hn .d { margin-top: 2px; color: var(--muted); font-size: 12.5px; }
+
+/* Coming soon */
+.soon { columns: 2 320px; column-gap: 44px; }
+.soon li { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; padding: 9px 0; border-bottom: 1px solid var(--rule); break-inside: avoid; }
+.soon a { font-weight: 620; }
+
+/* Filters and buttons */
+.filters { display: flex; flex-wrap: wrap; gap: 6px; margin: 0 0 10px; }
+.chip { padding: 5px 11px; border: 1px solid var(--rule-strong); border-radius: 999px; background: transparent; color: var(--ink); font-size: 13.5px; font-weight: 600; font-stretch: 92%; cursor: pointer; }
+.chip:hover { border-color: var(--ink); }
+.chip[aria-pressed="true"] { background: var(--ink); border-color: var(--ink); color: var(--bg); }
+.chip .n { margin-left: 4px; font-weight: 500; opacity: .72; font-variant-numeric: tabular-nums; }
+.toolbar { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 14px; margin: 4px 0 14px; font-size: 14px; }
+.btn { padding: 7px 13px; border: 1px solid var(--rule-strong); border-radius: 6px; background: var(--surface); color: var(--ink); font-size: 14px; font-weight: 620; cursor: pointer; }
+.btn:hover { border-color: var(--ink); }
+select { padding: 6px 8px; border: 1px solid var(--rule-strong); border-radius: 6px; background: var(--surface); color: var(--ink); font-size: 14px; }
+label.sel { display: inline-flex; align-items: center; gap: 8px; color: var(--muted); }
+.save { width: 36px; height: 36px; border: 1px solid transparent; border-radius: 6px; background: transparent; color: var(--muted); font-size: 19px; line-height: 1; cursor: pointer; }
+.save:hover { border-color: var(--rule-strong); color: var(--ink); }
+.save[aria-pressed="true"] { color: var(--star); }
+.actions-row .save { width: 30px; height: 30px; font-size: 17px; }
+
+/* Launch rows */
+.rows { border-top: 1px solid var(--rule); }
+.row { display: grid; grid-template-columns: 178px minmax(0, 1fr) auto; align-items: start; gap: 8px 20px; padding: 18px 0; border-bottom: 1px solid var(--rule); }
+.row-tag { display: flex; flex-direction: column; align-items: flex-start; gap: 6px; }
+.alt { color: var(--muted); font-size: 13px; font-variant-numeric: tabular-nums; }
+.row-head { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; }
+.row-head h3 { margin: 0 4px 0 0; font-size: 18.5px; line-height: 1.2; font-weight: 780; }
+.row-meta { display: flex; flex-wrap: wrap; gap: 2px 16px; margin: 5px 0 0; color: var(--muted); font-size: 13.5px; }
+.evidence { margin: 9px 0 0; padding: 1px 0 1px 11px; max-width: 76ch; border-left: 3px solid var(--tag); color: var(--ink-2); font-size: 14px; }
+.evidence p { margin: 0; }
+.evidence .by { margin-top: 2px; color: var(--muted); font-size: 12.5px; }
+.shop { display: inline-flex; flex-wrap: wrap; gap: 4px 12px; }
+.shop a { color: var(--accent); text-decoration: none; }
+.shop a:hover { text-decoration: underline; }
+@media (max-width: 640px) {
+  .row { grid-template-columns: minmax(0, 1fr) auto; }
+  .row-tag { grid-column: 1 / -1; flex-direction: row; flex-wrap: wrap; align-items: center; }
+}
+
+/* News */
+.day { margin: 26px 0 4px; color: var(--ink-2); font-size: 14.5px; font-weight: 720; font-stretch: 110%; }
+.item { display: grid; grid-template-columns: 70px minmax(0, 1fr) auto; gap: 2px 14px; padding: 11px 0; border-top: 1px solid var(--rule); }
+.item time { padding-top: 2px; color: var(--muted); font-size: 13px; font-variant-numeric: tabular-nums; }
+.item-meta { display: flex; flex-wrap: wrap; gap: 2px 12px; margin: 0; color: var(--muted); font-size: 12.5px; font-stretch: 92%; }
+.item-meta .outlet { color: var(--ink-2); font-weight: 650; }
+.item h3 { margin: 2px 0 0; font-size: 16px; line-height: 1.33; font-weight: 640; }
+.item .sum { margin: 3px 0 0; max-width: 82ch; color: var(--ink-2); font-size: 14px; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; overflow: hidden; }
+.thumb { float: right; width: 104px; height: 66px; margin: 2px 0 4px 14px; border-radius: 4px; object-fit: cover; background: var(--rule); }
+@media (max-width: 560px) { .item { grid-template-columns: minmax(0, 1fr) auto; } .item time { grid-column: 1 / -1; } .thumb { width: 84px; height: 56px; } }
+
+/* Tables */
+.table-wrap { overflow-x: auto; border-top: 1px solid var(--rule); }
+table { width: 100%; border-collapse: collapse; font-size: 14px; }
+th, td { padding: 10px 14px 10px 0; border-bottom: 1px solid var(--rule); text-align: left; vertical-align: top; }
+th { color: var(--muted); font-size: 12.5px; font-weight: 620; font-stretch: 90%; white-space: nowrap; }
+th button { padding: 0; border: 0; background: none; color: inherit; font-size: inherit; font-weight: inherit; cursor: pointer; }
+th button:hover { color: var(--ink); }
+.num { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+td.note { max-width: 46ch; color: var(--muted); }
+.chg.down { color: var(--down); }
+.chg.up { color: var(--up); }
+.src { white-space: nowrap; }
+.src i { display: inline-block; width: 9px; height: 9px; margin-right: 7px; border-radius: 50%; vertical-align: 0; }
+.src.ok i { background: var(--down); }
+.src.stale i { background: linear-gradient(90deg, var(--tag) 50%, transparent 50%); box-shadow: inset 0 0 0 1.5px var(--tag); }
+.src.error i { box-shadow: inset 0 0 0 2px var(--up); }
+.src.failing i { border-radius: 1px; background: var(--up); }
+.src.pending i { border: 1.5px dashed var(--rule-strong); }
+
+/* Saved */
+.saved li { display: grid; grid-template-columns: 84px minmax(0, 1fr) auto; align-items: baseline; gap: 2px 14px; padding: 11px 0; border-bottom: 1px solid var(--rule); }
+.saved .t { font-weight: 620; }
+.saved .s { color: var(--muted); font-size: 13px; }
+
+.foot { padding: 20px 0 40px; border-top: 1px solid var(--rule); color: var(--muted); font-size: 13px; }
+.foot p { margin: 4px 0; max-width: 84ch; }
+.toast { position: fixed; left: 50%; bottom: calc(18px + env(safe-area-inset-bottom, 0px)); z-index: 20; padding: 9px 14px; border-radius: 6px; background: var(--ink); color: var(--bg); font-size: 14px; opacity: 0; transform: translate(-50%, 16px); transition: opacity .2s, transform .2s; pointer-events: none; }
+.toast.show { opacity: 1; transform: translate(-50%, 0); }
+@media (prefers-reduced-motion: reduce) { .toast { transition: none; } }
+</style>
+</head>
+<body>
+<header class="wrap">
+  <div class="mast">
+    <h1 class="brand" id="site-title">Tech Radar</h1>
+    <input class="search" id="q" type="search" placeholder="Search stories and products" aria-label="Search stories and products" autocomplete="off">
+    <p class="status-line" id="status-line" aria-live="polite">Loading the latest data…</p>
+  </div>
+  <div id="banner-slot"></div>
+</header>
+<div class="tabs"><div class="wrap"><nav id="tabs" aria-label="Views"></nav></div></div>
+<main class="wrap" id="main"></main>
+<footer class="wrap foot" id="foot"><p>Prices are as reported by the linked article on the date shown. Store prices change, so check the store before buying or quoting.</p></footer>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+<!-- preview-data -->
+<script>
+(() => {
+  'use strict';
+
+  const VIEWS = [['today', 'Today'], ['launches', 'Launches'], ['prices', 'Prices'], ['news', 'News'], ['saved', 'Saved'], ['sources', 'Sources']];
+  const STATUS = { 'Launched': ['launched', 'Launched'], 'On sale': ['onsale', 'On sale'], 'Upcoming': ['upcoming', 'Upcoming'], 'Rumor': ['rumor', 'Rumour'] };
+  const SOURCE_STATE = { ok: 'Healthy', stale: 'Stale', error: 'Failed last run', failing: 'Failing', pending: 'Not checked yet' };
+  const CURRENCY_LOCALE = { INR: 'en-IN', USD: 'en-US', GBP: 'en-GB', EUR: 'en-IE' };
+  const REGION_LOCALE = { IN: 'en-IN', US: 'en-US', UK: 'en-GB' };
+  const HOUR = 3600e3;
+  const DAY = 24 * HOUR;
+
+  const $ = (sel, root = document) => root.querySelector(sel);
+  const ESC = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' };
+  const esc = (v) => String(v == null ? '' : v).replace(/[&<>"']/g, (c) => ESC[c]);
+  const href = (u) => (/^https?:\/\//i.test(String(u || '')) ? esc(u) : '#');
+  const ts = (iso) => (iso ? Date.parse(iso) : NaN);
+  const plural = (n, one, many) => (n === 1 ? one : many);
+  const ext = 'target="_blank" rel="noopener"';
+
+  const state = {
+    view: 'today', q: '', launchCat: 'All', launchStatus: 'All', newsCat: 'All', newsOutlet: 'All',
+    newsLimit: 80, priceCat: 'All', sort: { key: 'date', dir: -1 }, clearArmed: false,
+  };
+  let data = null;
+  let fmt = null;
+  let productIndex = new Map();
+
+  const storage = {
+    get(key, fallback) { try { const raw = localStorage.getItem(key); return raw ? JSON.parse(raw) : fallback; } catch (e) { return fallback; } },
+    set(key, value) { try { localStorage.setItem(key, JSON.stringify(value)); } catch (e) { /* storage unavailable: saved items last for this visit */ } },
+  };
+  let saved = storage.get('techradar:saved', {});
+  if (!saved || typeof saved !== 'object') saved = {};
+
+  // ---------- formatting ----------
+  function makeFormatters(region) {
+    const loc = REGION_LOCALE[region] || 'en-IN';
+    return {
+      day: new Intl.DateTimeFormat(loc, { day: 'numeric', month: 'short' }),
+      dayYear: new Intl.DateTimeFormat(loc, { day: 'numeric', month: 'short', year: 'numeric' }),
+      weekday: new Intl.DateTimeFormat(loc, { weekday: 'long', day: 'numeric', month: 'short' }),
+      time: new Intl.DateTimeFormat(loc, { hour: 'numeric', minute: '2-digit' }),
+      full: new Intl.DateTimeFormat(loc, { dateStyle: 'medium', timeStyle: 'short' }),
+      rel: new Intl.RelativeTimeFormat('en', { numeric: 'auto' }),
+    };
+  }
+  const fmtDate = (iso) => {
+    const t = ts(iso);
+    if (Number.isNaN(t)) return '';
+    const d = new Date(t);
+    return (d.getFullYear() === new Date().getFullYear() ? fmt.day : fmt.dayYear).format(d);
+  };
+  const fmtFull = (iso) => { const t = ts(iso); return Number.isNaN(t) ? '' : fmt.full.format(new Date(t)); };
+  function ago(iso) {
+    const t = ts(iso);
+    if (Number.isNaN(t)) return '';
+    const s = (t - Date.now()) / 1000;
+    const a = Math.abs(s);
+    if (a < 90) return 'just now';
+    if (a < 3600) return fmt.rel.format(Math.round(s / 60), 'minute');
+    if (a < 86400) return fmt.rel.format(Math.round(s / 3600), 'hour');
+    if (a < 86400 * 21) return fmt.rel.format(Math.round(s / 86400), 'day');
+    return fmtDate(iso);
+  }
+  function duration(ms) {
+    if (ms < HOUR) { const m = Math.max(1, Math.round(ms / 60000)); return `${m} ${plural(m, 'minute', 'minutes')}`; }
+    const h = Math.round(ms / HOUR);
+    if (h < 48) return `${h} ${plural(h, 'hour', 'hours')}`;
+    return `${Math.round(ms / DAY)} days`;
+  }
+  function dayLabel(iso) {
+    const d = new Date(ts(iso));
+    const key = (x) => `${x.getFullYear()}-${x.getMonth()}-${x.getDate()}`;
+    const today = new Date();
+    const yesterday = new Date(today.getTime() - DAY);
+    if (key(d) === key(today)) return 'Today';
+    if (key(d) === key(yesterday)) return 'Yesterday';
+    return fmt.weekday.format(d);
+  }
+  function money(amount, currency) {
+    const cents = Math.round(amount * 100) % 100 !== 0;
+    try {
+      return new Intl.NumberFormat(CURRENCY_LOCALE[currency] || 'en-US', {
+        style: 'currency', currency, minimumFractionDigits: cents ? 2 : 0, maximumFractionDigits: cents ? 2 : 0,
+      }).format(amount);
+    } catch (e) { return `${currency} ${amount}`; }
+  }
+  const refNow = () => (data.meta.generated_at ? ts(data.meta.generated_at) : Date.now());
+  function matches(...fields) {
+    if (!state.q) return true;
+    const hay = fields.join(' ').toLowerCase();
+    return state.q.toLowerCase().split(/\s+/).filter(Boolean).every((w) => hay.includes(w));
+  }
+  const countBy = (list, fn) => { const m = new Map(); list.forEach((x) => { const k = fn(x); m.set(k, (m.get(k) || 0) + 1); }); return m; };
+
+  // ---------- prices ----------
+  const byDate = (a, b) => ts(a.date) - ts(b.date);
+  const pricesIn = (p, cur) => p.prices.filter((x) => x.currency === cur).sort(byDate);
+  function latestPrice(p) {
+    const preferred = pricesIn(p, data.meta.currency || 'INR');
+    if (preferred.length) return preferred[preferred.length - 1];
+    const all = p.prices.slice().sort(byDate);
+    return all.length ? all[all.length - 1] : null;
+  }
+  function otherPrices(p, shown) {
+    const latest = {};
+    p.prices.forEach((x) => {
+      if (shown && x.currency === shown.currency) return;
+      if (!latest[x.currency] || ts(x.date) > ts(latest[x.currency].date)) latest[x.currency] = x;
+    });
+    return Object.values(latest);
+  }
+  function priceChange(p, pr) {
+    if (!pr) return null;
+    const list = pricesIn(p, pr.currency);
+    if (list.length >= 2 && list[0].amount !== pr.amount) return { delta: pr.amount - list[0].amount, base: list[0].amount, since: list[0].date };
+    if (pr.was && pr.was > pr.amount) return { delta: pr.amount - pr.was, base: pr.was, was: true };
+    return null;
+  }
+  function changeHtml(ch, cur) {
+    const down = ch.delta < 0;
+    const pct = Math.round((Math.abs(ch.delta) / ch.base) * 100);
+    const context = ch.was ? `from ${money(ch.base, cur)}` : `since ${fmtDate(ch.since)}`;
+    return `<span class="chg ${down ? 'down' : 'up'}">${down ? '↓' : '↑'} ${esc(money(Math.abs(ch.delta), cur))} (${pct}%)</span> <span class="muted">${esc(context)}</span>`;
+  }
+  function tagHtml(p) {
+    const pr = latestPrice(p);
+    if (!pr) return '<span class="tag tba">No price yet</span>';
+    const title = `${pr.from ? 'Starting price' : 'Price'} reported by ${pr.source.outlet} on ${fmtDate(pr.date)}`;
+    return `<span class="tag" title="${esc(title)}">${pr.from ? '<small>from</small>' : ''}<span>${esc(money(pr.amount, pr.currency))}</span></span>`;
+  }
+  function shopLinks(p) {
+    const tag = data.meta.amazon_tag;
+    return (data.meta.stores || []).map((s) => {
+      let url = String(s.url || '').replace('{q}', encodeURIComponent(p.name));
+      const affiliate = tag && /amazon\./i.test(url);
+      if (affiliate) url += `${url.includes('?') ? '&' : '?'}tag=${encodeURIComponent(tag)}`;
+      return `<a href="${href(url)}" target="_blank" rel="noopener${affiliate ? ' sponsored' : ''}">${esc(s.name)}</a>`;
+    }).join('');
+  }
+  function statusChips(p) {
+    const [cls, label] = STATUS[p.status] || ['rumor', p.status];
+    let h = `<span class="status ${cls}">${esc(label)}</span>`;
+    if (p.reviewed) h += '<span class="status flag">Reviewed</span>';
+    if (p.deal_seen) h += `<span class="status flag">Deal seen ${esc(fmtDate(p.deal_seen))}</span>`;
+    return h;
+  }
+
+  // ---------- saving ----------
+  const isSaved = (key) => Object.prototype.hasOwnProperty.call(saved, key);
+  function saveBtn(kind, id, label) {
+    const on = isSaved(`${kind}:${id}`);
+    return `<button type="button" class="save" data-action="save" data-kind="${kind}" data-id="${esc(id)}" aria-pressed="${on}" aria-label="Save ${esc(label)}" title="${on ? 'Saved' : 'Save for later'}">${on ? '★' : '☆'}</button>`;
+  }
+  function toggleSave(kind, id) {
+    const key = `${kind}:${id}`;
+    if (isSaved(key)) { delete saved[key]; storage.set('techradar:saved', saved); return false; }
+    let entry = null;
+    if (kind === 'product') {
+      const p = productIndex.get(id);
+      if (p) { const pr = latestPrice(p); entry = { kind, title: p.name, link: (p.articles[0] || {}).link || '', note: pr ? `${pr.from ? 'from ' : ''}${money(pr.amount, pr.currency)}, ${pr.source.outlet} ${fmtDate(pr.date)}` : STATUS[p.status][1] }; }
+    } else if (kind === 'story') {
+      const n = data.news.find((x) => x.id === id);
+      if (n) entry = { kind, title: n.title, link: n.link, note: `${n.outlet}, ${fmtDate(n.published)}` };
+    } else if (kind === 'topic') {
+      const t = data.topics.find((x) => x.id === id);
+      if (t) entry = { kind, title: t.label, link: (t.items[0] || {}).link || '', note: `${t.outlets.length} outlets`, sources: t.items.map((i) => ({ title: i.title, link: i.link, outlet: i.outlet })) };
+    }
+    if (!entry) return false;
+    entry.saved_at = new Date().toISOString();
+    saved[key] = entry;
+    storage.set('techradar:saved', saved);
+    return true;
+  }
+  function notesText() {
+    return Object.values(saved).map((s) => {
+      let out = `${s.title}${s.note ? ` (${s.note})` : ''}\n${s.link || ''}`;
+      if (s.sources) out += `\n${s.sources.map((x) => `  ${x.outlet}: ${x.title}\n  ${x.link}`).join('\n')}`;
+      return out;
+    }).join('\n\n');
+  }
+
+  // ---------- clipboard, files, toast ----------
+  function toast(msg) {
+    const el = $('#toast');
+    el.textContent = msg;
+    el.classList.add('show');
+    clearTimeout(toast.timer);
+    toast.timer = setTimeout(() => el.classList.remove('show'), 2600);
+  }
+  async function copyText(text, message) {
+    let ok = false;
+    try { await navigator.clipboard.writeText(text); ok = true; } catch (e) {
+      const ta = document.createElement('textarea');
+      ta.value = text; ta.setAttribute('readonly', ''); ta.style.position = 'fixed'; ta.style.opacity = '0';
+      document.body.appendChild(ta); ta.select();
+      try { ok = document.execCommand('copy'); } catch (e2) { ok = false; }
+      ta.remove();
+    }
+    toast(ok ? message : 'This browser blocked copying. Select the text and copy it manually.');
+  }
+  const csvCell = (v) => { const s = String(v == null ? '' : v); return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s; };
+  function pricesCsv(list) {
+    const lines = [['Product', 'Brand', 'Category', 'Status', 'Price', 'Currency', 'Starting price', 'Price type', 'Reported on', 'Reported by', 'Source link', 'Evidence'].join(',')];
+    list.forEach((p) => {
+      const pr = latestPrice(p);
+      if (pr) lines.push([p.name, p.brand, p.category, STATUS[p.status][1], pr.amount, pr.currency, pr.from ? 'yes' : 'no', pr.kind, String(pr.date).slice(0, 10), pr.source.outlet, pr.source.link, pr.evidence].map(csvCell).join(','));
+    });
+    return lines.join('\n');
+  }
+  function download(name, text) {
+    try {
+      const url = URL.createObjectURL(new Blob(['\ufeff', text], { type: 'text/csv;charset=utf-8' }));
+      const a = document.createElement('a');
+      a.href = url; a.download = name; document.body.appendChild(a); a.click(); a.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 1500);
+    } catch (e) { toast('Downloads are blocked here. Use Copy CSV instead.'); }
+  }
+
+  // ---------- small pieces ----------
+  const empty = (title, html) => `<div class="empty"><b>${esc(title)}</b>${html}</div>`;
+  function chips(key, values, counts) {
+    return values.map((v) => {
+      const label = v === 'Rumor' ? 'Rumour' : v;
+      const n = counts && v !== 'All' ? (counts.get(v) || 0) : null;
+      return `<button type="button" class="chip" data-action="filter" data-key="${key}" data-value="${esc(v)}" aria-pressed="${state[key] === v}">${esc(label)}${n != null ? `<span class="n">${n}</span>` : ''}</button>`;
+    }).join('');
+  }
+  function shelf(list) {
+    return `<div class="shelf" role="list">${list.slice(0, 18).map((p, i) => {
+      const art = p.articles[0] || {};
+      return `<article class="hang" role="listitem" style="--i:${i};--tilt:${((i % 3) - 1) * 1.6}deg">
+        ${tagHtml(p)}
+        <h3><a href="${href(art.link)}" ${ext}>${esc(p.name)}</a></h3>
+        <p class="meta-row">${statusChips(p)}</p>
+        <p class="meta-row"><span>${esc(p.category)}</span><span>${esc(art.outlet || '')}</span><span>${esc(ago(p.first_seen))}</span></p>
+      </article>`;
+    }).join('')}</div>`;
+  }
+  function storyItem(t) {
+    const n = t.outlets.length;
+    const meter = Array.from({ length: 6 }, (_, i) => `<i class="${i < n ? '' : 'off'}" style="height:${8 + i * 3.5}px"></i>`).join('');
+    return `<li class="story">
+      <div><div class="meter" aria-hidden="true">${meter}</div><div class="count">${n} outlets</div></div>
+      <div>
+        <h3><a href="${href((t.items[0] || {}).link)}" ${ext}>${esc(t.label)}</a></h3>
+        <p class="outlets">${esc(t.outlets.join(', '))}. Latest ${esc(ago(t.last_seen))}.</p>
+        <div class="actions-row">
+          <details><summary>${t.items.length} ${plural(t.items.length, 'article', 'articles')}</summary>
+            <ol class="arts">${t.items.map((i) => `<li><a href="${href(i.link)}" ${ext}>${esc(i.title)}</a> <span class="muted">${esc(i.outlet)}, ${esc(fmtDate(i.published))}</span></li>`).join('')}</ol>
+          </details>
+          <button type="button" class="link-btn" data-action="copy-topic" data-id="${esc(t.id)}">Copy sources</button>
+          ${saveBtn('topic', t.id, t.label)}
+        </div>
+      </div>
+    </li>`;
+  }
+  const hnItem = (n) => `<li><span class="pts">${n.points || 0}<small>points</small></span><div><a class="t" href="${href(n.link)}" ${ext}>${esc(n.title)}</a><div class="d">${n.comments || 0} comments${n.discussion ? `, <a href="${href(n.discussion)}" ${ext}>discussion</a>` : ''}</div></div></li>`;
+  function soonItem(p) {
+    const art = p.articles[0] || {};
+    return `<li><span><a href="${href(art.link)}" ${ext}>${esc(p.name)}</a> <span class="muted small">${esc(art.outlet || '')}, ${esc(fmtDate(p.last_seen))}</span></span>${statusChips(p)}</li>`;
+  }
+  function productRow(p) {
+    const pr = latestPrice(p);
+    const ch = priceChange(p, pr);
+    const meta = [];
+    if (pr) {
+      const conf = pr.confirmed_by || [];
+      meta.push(`<span>${pr.from ? 'Starting price' : 'Price'} reported by ${esc(pr.source.outlet)} on ${esc(fmtDate(pr.date))}${conf.length ? `, confirmed by ${esc(conf.map((c) => c.outlet).join(', '))}` : ''}</span>`);
+      if (ch) meta.push(`<span>${changeHtml(ch, pr.currency)}</span>`);
+    } else if (p.status === 'Upcoming' || p.status === 'Rumor') {
+      meta.push('<span>Not launched yet. Prices are recorded only after launch.</span>');
+    } else {
+      meta.push('<span>No article has reported a price yet.</span>');
+    }
+    const arts = p.articles;
+    return `<article class="row">
+      <div class="row-tag">${tagHtml(p)}${otherPrices(p, pr).map((o) => `<span class="alt">${esc(money(o.amount, o.currency))} ${esc(o.currency)}</span>`).join('')}</div>
+      <div>
+        <div class="row-head"><h3>${esc(p.name)}</h3>${statusChips(p)}<span class="muted small">${esc(p.category)}</span></div>
+        <p class="row-meta">${meta.join('')}</p>
+        ${pr && pr.evidence ? `<blockquote class="evidence"><p>“${esc(pr.evidence)}”</p><p class="by">From <a href="${href(pr.source.link)}" ${ext}>${esc(pr.source.outlet)}</a></p></blockquote>` : ''}
+        <div class="actions-row">
+          <span class="shop"><span class="muted">Shop</span>${shopLinks(p)}</span>
+          <details><summary>${arts.length} ${plural(arts.length, 'article', 'articles')}</summary>
+            <ul class="arts">${arts.map((a) => `<li><a href="${href(a.link)}" ${ext}>${esc(a.title)}</a> <span class="muted">${esc(a.outlet)}, ${esc(fmtDate(a.published))}</span></li>`).join('')}</ul>
+          </details>
+        </div>
+      </div>
+      ${saveBtn('product', p.id, p.name)}
+    </article>`;
+  }
+  function newsItem(n) {
+    const prod = n.product_id ? productIndex.get(n.product_id) : null;
+    const img = data.meta.show_images && n.image ? `<img class="thumb" src="${href(n.image)}" alt="" loading="lazy" referrerpolicy="no-referrer" onerror="this.remove()">` : '';
+    return `<article class="item">
+      <time datetime="${esc(n.published)}" title="${esc(fmtFull(n.published))}">${esc(fmt.time.format(new Date(ts(n.published))))}</time>
+      <div>
+        ${img}
+        <p class="item-meta"><span class="outlet">${esc(n.outlet)}</span><span>${esc(n.category)}</span>${prod ? `<a href="#launches" class="plain" data-action="find-product" data-name="${esc(prod.name)}">${esc(prod.name)}</a>` : ''}</p>
+        <h3><a href="${href(n.link)}" ${ext}>${esc(n.title)}</a></h3>
+        ${n.summary ? `<p class="sum">${esc(n.summary)}</p>` : ''}
+      </div>
+      ${saveBtn('story', n.id, n.title)}
+    </article>`;
+  }
+
+  // ---------- views ----------
+  function viewToday() {
+    const ref = refNow();
+    const within = (iso, days) => ref - ts(iso) <= days * DAY;
+    const fresh = data.products
+      .filter((p) => (p.status === 'Launched' || p.status === 'On sale') && within(p.first_seen, 4) && matches(p.name, p.brand, p.category))
+      .sort((a, b) => ts(b.first_seen) - ts(a.first_seen));
+    const gadgets = fresh.filter((p) => p.category !== 'Accessories');
+    const accessories = fresh.filter((p) => p.category === 'Accessories');
+    const soon = data.products
+      .filter((p) => (p.status === 'Upcoming' || p.status === 'Rumor') && within(p.last_seen, 7) && matches(p.name, p.brand, p.category))
+      .sort((a, b) => ts(b.last_seen) - ts(a.last_seen)).slice(0, 14);
+    const topics = data.topics.filter((t) => matches(t.label, t.outlets.join(' '), t.items.map((i) => i.title).join(' '))).slice(0, 10);
+    const hn = data.news.filter((n) => n.kind === 'community' && within(n.published, 2) && matches(n.title))
+      .sort((a, b) => (b.points || 0) - (a.points || 0)).slice(0, 10);
+    const windowDays = Math.round((data.meta.trending_window_hours || 72) / 24);
+    return `
+      <h2 class="h2">Just launched</h2>
+      <p class="sub">Gadgets launched, reviewed or put on sale in the last 4 days. Each price is the one the linked article reported.</p>
+      ${gadgets.length ? shelf(gadgets) : empty('No new launches in the last 4 days.', ' Upcoming devices and rumours are listed further down.')}
+      <h2 class="h2">New accessories</h2>
+      ${accessories.length ? shelf(accessories) : '<p class="sub">No accessory launches reported in the last 4 days. Most accessory news arrives through 9to5Toys, The Verge and Engadget.</p>'}
+      <div class="cols">
+        <div>
+          <h2 class="h2">Big stories</h2>
+          <p class="sub">Stories that at least ${data.meta.min_outlets || 2} different outlets covered in the last ${windowDays} days, most covered first.</p>
+          ${topics.length ? `<ol class="stories">${topics.map(storyItem).join('')}</ol>` : empty('No big stories right now.', ' A story appears here once two different outlets cover it.')}
+        </div>
+        <div>
+          <h2 class="h2">On Hacker News</h2>
+          <p class="sub">Front-page discussions with 100+ points from the last 2 days.</p>
+          ${hn.length ? `<ol class="hn">${hn.map(hnItem).join('')}</ol>` : empty('Nothing here yet.', ' Hacker News picks appear after the next live update.')}
+        </div>
+      </div>
+      <h2 class="h2">Coming soon and rumours</h2>
+      <p class="sub">Devices in the news over the last 7 days that haven’t launched. They get a price only once they launch.</p>
+      ${soon.length ? `<ul class="soon">${soon.map(soonItem).join('')}</ul>` : empty('Nothing upcoming in the last 7 days.', '')}`;
+  }
+
+  function viewLaunches() {
+    const cats = countBy(data.products, (p) => p.category);
+    const catList = ['All', ...[...new Set([...cats.keys(), 'Accessories'])].sort()];
+    let list = data.products.filter((p) => matches(p.name, p.brand, p.category));
+    if (state.launchCat !== 'All') list = list.filter((p) => p.category === state.launchCat);
+    if (state.launchStatus === 'Reviewed') list = list.filter((p) => p.reviewed);
+    else if (state.launchStatus === 'Deals') list = list.filter((p) => p.deal_seen);
+    else if (state.launchStatus !== 'All') list = list.filter((p) => p.status === state.launchStatus);
+    list.sort((a, b) => ts(b.last_seen) - ts(a.last_seen));
+    return `
+      <h2 class="h2">Launches</h2>
+      <p class="sub">${data.products.length} products mentioned in the last ${Math.round((data.meta.products_days || 120) / 30)} months, most recently mentioned first. The yellow quote under a price is the sentence it was taken from.</p>
+      <div class="filters" role="group" aria-label="Category">${chips('launchCat', catList, cats)}</div>
+      <div class="filters" role="group" aria-label="Status">${chips('launchStatus', ['All', 'Launched', 'On sale', 'Upcoming', 'Rumor', 'Reviewed', 'Deals'])}</div>
+      ${list.length ? `<div class="rows">${list.slice(0, 200).map(productRow).join('')}</div>` : empty('No products match these filters.', ' Choose All or clear the search box.')}`;
+  }
+
+  function viewPrices() {
+    const cur = data.meta.currency || 'INR';
+    const priced = data.products.filter((p) => latestPrice(p));
+    const cats = ['All', ...[...new Set(priced.map((p) => p.category))].sort()];
+    let list = priced.filter((p) => matches(p.name, p.brand, p.category));
+    if (state.priceCat !== 'All') list = list.filter((p) => p.category === state.priceCat);
+    const { key, dir } = state.sort;
+    const value = (p) => {
+      const pr = latestPrice(p);
+      if (key === 'name') return [0, p.name.toLowerCase()];
+      if (key === 'category') return [0, p.category];
+      if (key === 'price') return [pr.currency === cur ? 0 : 1, pr.amount];
+      return [0, ts(pr.date)];
+    };
+    list.sort((a, b) => {
+      const va = value(a); const vb = value(b);
+      if (va[0] !== vb[0]) return va[0] - vb[0];
+      return (va[1] > vb[1] ? 1 : va[1] < vb[1] ? -1 : 0) * dir;
+    });
+    const th = (k, label, cls = '') => `<th scope="col" class="${cls}" aria-sort="${key === k ? (dir > 0 ? 'ascending' : 'descending') : 'none'}"><button type="button" data-action="sort" data-key="${k}">${label}${key === k ? `<span aria-hidden="true">${dir > 0 ? ' ▲' : ' ▼'}</span>` : ''}</button></th>`;
+    const rows = list.map((p) => {
+      const pr = latestPrice(p);
+      const ch = priceChange(p, pr);
+      const conf = (pr.confirmed_by || []).length;
+      return `<tr>
+        <td><b>${esc(p.name)}</b><div class="muted small">${esc(p.brand)}</div></td>
+        <td>${esc(p.category)}</td>
+        <td>${statusChips(p)}</td>
+        <td class="num"><b>${pr.from ? '<span class="muted small">from </span>' : ''}${esc(money(pr.amount, pr.currency))}</b></td>
+        <td class="num">${ch ? changeHtml(ch, pr.currency) : '<span class="muted">–</span>'}</td>
+        <td><a href="${href(pr.source.link)}" ${ext}>${esc(pr.source.outlet)}</a><div class="muted small">${esc(fmtDate(pr.date))}${conf ? `, confirmed by ${conf} more` : ''}</div></td>
+        <td><span class="shop">${shopLinks(p)}</span></td>
+      </tr>`;
+    }).join('');
+    return `
+      <h2 class="h2">Prices</h2>
+      <p class="sub">${priced.length} ${plural(priced.length, 'product has', 'products have')} a reported price. Each is what the linked article said on that date; store prices move, so check before quoting one.</p>
+      <div class="toolbar">
+        <label class="sel">Category <select data-action="price-cat">${cats.map((c) => `<option${c === state.priceCat ? ' selected' : ''}>${esc(c)}</option>`).join('')}</select></label>
+        <button type="button" class="btn" data-action="download-csv">Download CSV</button>
+        <button type="button" class="btn" data-action="copy-csv">Copy CSV</button>
+      </div>
+      ${list.length ? `<div class="table-wrap"><table>
+        <thead><tr>${th('name', 'Product')}${th('category', 'Category')}<th scope="col">Status</th>${th('price', 'Price', 'num')}<th scope="col" class="num">Change</th>${th('date', 'Reported')}<th scope="col">Shop</th></tr></thead>
+        <tbody>${rows}</tbody></table></div>` : empty('No prices match.', ' Clear the search box or choose another category.')}`;
+  }
+
+  function viewNews() {
+    const items = data.news.filter((n) => n.kind !== 'community');
+    const cats = countBy(items, (n) => n.category);
+    const catList = ['All', ...[...cats.entries()].sort((a, b) => b[1] - a[1]).map((e) => e[0])];
+    const outlets = [...countBy(items, (n) => n.outlet).keys()].sort((a, b) => a.localeCompare(b));
+    let list = items.filter((n) => matches(n.title, n.summary, n.outlet, n.category));
+    if (state.newsCat !== 'All') list = list.filter((n) => n.category === state.newsCat);
+    if (state.newsOutlet !== 'All') list = list.filter((n) => n.outlet === state.newsOutlet);
+    const shown = list.slice(0, state.newsLimit);
+    let body = '';
+    let lastDay = '';
+    shown.forEach((n) => {
+      const day = dayLabel(n.published);
+      if (day !== lastDay) { body += `<h3 class="day">${esc(day)}</h3>`; lastDay = day; }
+      body += newsItem(n);
+    });
+    const remaining = list.length - shown.length;
+    return `
+      <h2 class="h2">News</h2>
+      <p class="sub">${items.length} stories from the last ${data.meta.news_days || 21} days, newest first.</p>
+      <div class="filters" role="group" aria-label="Category">${chips('newsCat', catList, cats)}</div>
+      <div class="toolbar"><label class="sel">Outlet <select data-action="news-outlet">${['All', ...outlets].map((o) => `<option${o === state.newsOutlet ? ' selected' : ''}>${esc(o)}</option>`).join('')}</select></label></div>
+      ${shown.length ? body : empty('No stories match.', ' Clear the search box or choose another category.')}
+      ${remaining > 0 ? `<p><button type="button" class="btn" data-action="more">Show ${Math.min(80, remaining)} more</button></p>` : ''}`;
+  }
+
+  function viewSaved() {
+    const entries = Object.entries(saved).sort((a, b) => String(b[1].saved_at || '').localeCompare(String(a[1].saved_at || '')));
+    if (!entries.length) return `<h2 class="h2">Saved</h2>${empty('Nothing saved yet.', ' Use the ☆ button on a story, product or big story to keep it here. Saved items stay in this browser only.')}`;
+    const kinds = { product: 'Product', story: 'Story', topic: 'Big story' };
+    return `
+      <h2 class="h2">Saved</h2>
+      <p class="sub">${entries.length} saved in this browser. Copy them as notes to paste into a script or research document.</p>
+      <div class="toolbar">
+        <button type="button" class="btn" data-action="copy-notes">Copy as research notes</button>
+        <button type="button" class="btn" data-action="clear-saved">${state.clearArmed ? 'Click again to clear everything' : 'Clear all'}</button>
+      </div>
+      <ul class="saved">${entries.map(([key, s]) => `<li>
+        <span class="muted small">${esc(kinds[s.kind] || '')}</span>
+        <div><a class="t" href="${href(s.link)}" ${ext}>${esc(s.title)}</a>${s.note ? `<div class="s">${esc(s.note)}</div>` : ''}</div>
+        <button type="button" class="link-btn" data-action="unsave" data-key="${esc(key)}">Remove</button>
+      </li>`).join('')}</ul>`;
+  }
+
+  function viewSources() {
+    const order = { failing: 0, error: 1, stale: 2, ok: 3, pending: 4 };
+    const list = data.sources.slice().sort((a, b) => ((order[a.status] ?? 5) - (order[b.status] ?? 5)) || a.name.localeCompare(b.name));
+    const counts = countBy(list, (s) => s.status);
+    const checked = list.length - (counts.get('pending') || 0);
+    const problems = list.filter((s) => s.status !== 'ok' && s.status !== 'pending').length;
+    const ref = refNow();
+    const note = (s) => {
+      if (s.status === 'stale') return `Answers, but its newest story is ${Math.round((ref - ts(s.newest_item)) / DAY)} days old.`;
+      if (s.status === 'error') return `${s.last_error || 'Request failed'}. It will be retried on the next update.`;
+      if (s.status === 'failing') return `${s.last_error || 'Request failed'} on ${s.consecutive_failures} updates in a row. The address may have changed: replace or remove it in config.yaml.`;
+      if (s.status === 'pending') return data.meta.preview ? 'Not part of this preview.' : 'Checked on the next update.';
+      return '';
+    };
+    const region = (s) => (s.kind === 'community' ? 'Discussion' : s.region === 'IN' ? 'India' : 'Global');
+    const rows = list.map((s) => `<tr>
+      <td><b>${esc(s.name)}</b><div class="muted small">${region(s)}</div></td>
+      <td><span class="src ${esc(s.status)}"><i aria-hidden="true"></i>${esc(SOURCE_STATE[s.status] || s.status)}</span></td>
+      <td class="num">${s.items_last_run != null ? s.items_last_run : '–'}</td>
+      <td>${s.newest_item ? esc(fmtDate(s.newest_item)) : '–'}</td>
+      <td>${s.last_checked ? esc(ago(s.last_checked)) : '–'}</td>
+      <td class="note">${esc(note(s))}</td>
+    </tr>`).join('');
+    const summary = checked ? `${counts.get('ok') || 0} of ${checked} checked sources are healthy.` : 'No source has been checked yet.';
+    return `
+      <h2 class="h2">Sources</h2>
+      <p class="sub">${esc(summary)}${problems ? ` ${problems} ${plural(problems, 'needs', 'need')} attention and ${plural(problems, 'is', 'are')} listed first.` : ''}</p>
+      <div class="table-wrap"><table>
+        <thead><tr><th scope="col">Source</th><th scope="col">State</th><th scope="col" class="num">Stories kept</th><th scope="col">Newest story</th><th scope="col">Checked</th><th scope="col">Notes</th></tr></thead>
+        <tbody>${rows}</tbody></table></div>
+      <h2 class="h2">How updating works</h2>
+      <p class="sub">Every ${data.meta.update_every_hours || 4} hours GitHub runs the updater. It re-tests its rules, reads each feed once, records new stories, products and prices, flags feeds that fail or go quiet, and republishes this site. If no source can be reached, the previous data stays up. To update right away, open your repository on GitHub and choose Actions, then Update Tech Radar, then Run workflow. Sources are listed in scraper/config.yaml.</p>`;
+  }
+
+  // ---------- page chrome ----------
+  function renderTabs() {
+    const counts = {
+      launches: data.products.length,
+      prices: data.products.filter((p) => p.prices.length).length,
+      news: data.news.filter((n) => n.kind !== 'community').length,
+      saved: Object.keys(saved).length,
+    };
+    $('#tabs').innerHTML = VIEWS.map(([id, label]) => `<a href="#${id}"${state.view === id ? ' aria-current="page"' : ''}>${label}${counts[id] != null ? `<span class="n">${counts[id]}</span>` : ''}</a>`).join('');
+  }
+  function renderStatus() {
+    const m = data.meta;
+    if (!m.generated_at) { $('#status-line').innerHTML = '<span>Waiting for the first update.</span>'; return; }
+    const parts = [`<span title="${esc(fmtFull(m.generated_at))}">Updated <b>${esc(ago(m.generated_at))}</b></span>`];
+    const total = m.sources_total || 0;
+    if (m.preview) {
+      const checked = data.sources.filter((s) => s.status !== 'pending').length;
+      parts.push(`<span>Sample from ${checked} of ${total} sources</span>`);
+    } else {
+      const next = ts(m.generated_at) + (m.update_every_hours || 4) * HOUR - Date.now();
+      parts.push(`<span>${next > 15 * 60e3 ? `Next update in about ${esc(duration(next))}` : 'Next update due now'}</span>`);
+      const ok = m.sources_ok || 0;
+      const cls = total && ok === total ? '' : ok >= total * 0.75 ? 'warn' : 'bad';
+      parts.push(`<a href="#sources" class="plain"><span class="dot ${cls}" aria-hidden="true"></span>${ok} of ${total} sources healthy</a>`);
+    }
+    if (m.counts && m.counts.new_items != null) parts.push(`<span>Last update added ${m.counts.new_items} ${plural(m.counts.new_items, 'story', 'stories')} and ${m.counts.new_products} ${plural(m.counts.new_products, 'product', 'products')}</span>`);
+    $('#status-line').innerHTML = parts.join('');
+  }
+  function renderBanner() {
+    const m = data.meta;
+    let html = '';
+    if (m.preview) {
+      html = `<p class="note">${esc(m.note || 'Preview with sample data.')}</p>`;
+    } else if (m.generated_at) {
+      const age = Date.now() - ts(m.generated_at);
+      if (age > (m.update_every_hours || 4) * 2.5 * HOUR) html += `<p class="note">This data is ${esc(duration(age))} old, so automatic updates may have stopped. Open the repository’s Actions tab to see the latest run.</p>`;
+      if (m.last_failed_run && ts(m.last_failed_run) > ts(m.generated_at)) html += `<p class="note">The update at ${esc(fmtFull(m.last_failed_run))} couldn’t reach any source, so you’re seeing the previous data.</p>`;
+    }
+    $('#banner-slot').innerHTML = html;
+  }
+  function renderMain() {
+    const views = { today: viewToday, launches: viewLaunches, prices: viewPrices, news: viewNews, saved: viewSaved, sources: viewSources };
+    $('#main').innerHTML = `<section class="view">${(views[state.view] || viewToday)()}</section>`;
+  }
+  function render() {
+    renderTabs();
+    renderStatus();
+    renderBanner();
+    if (!data.meta.generated_at) {
+      $('#main').innerHTML = `<section class="view"><h2 class="h2">Waiting for the first update</h2><p class="sub">The updater runs every ${data.meta.update_every_hours || 4} hours. To fill the site now, open your repository on GitHub and choose Actions, then Update Tech Radar, then Run workflow. It takes about 3 minutes; reload this page afterwards.</p></section>`;
+      return;
+    }
+    renderMain();
+    $('#foot').innerHTML = `<p>Prices are as reported by the linked article on the date shown. Store prices change, so check the store before buying or quoting.</p><p>Built from public RSS feeds. Data generated ${esc(fmtFull(data.meta.generated_at))}.</p>`;
+  }
+  function refocus(action, attr, value) {
+    const el = [...document.querySelectorAll(`[data-action="${action}"]`)].find((b) => b.getAttribute(attr) === value);
+    if (el) el.focus();
+  }
+  const viewFromHash = () => { const h = location.hash.replace('#', ''); return VIEWS.some(([id]) => id === h) ? h : 'today'; };
+
+  // ---------- events ----------
+  document.addEventListener('click', (e) => {
+    const el = e.target.closest('[data-action]');
+    if (!el || !data) return;
+    const action = el.dataset.action;
+    if (action === 'filter') {
+      state[el.dataset.key] = el.dataset.value;
+      if (el.dataset.key === 'newsCat') state.newsLimit = 80;
+      renderMain();
+      refocus('filter', 'data-value', el.dataset.value);
+    } else if (action === 'sort') {
+      const k = el.dataset.key;
+      state.sort = { key: k, dir: state.sort.key === k ? -state.sort.dir : (k === 'name' || k === 'category' ? 1 : -1) };
+      renderMain();
+      refocus('sort', 'data-key', k);
+    } else if (action === 'more') {
+      state.newsLimit += 80;
+      renderMain();
+    } else if (action === 'save') {
+      const on = toggleSave(el.dataset.kind, el.dataset.id);
+      const key = `${el.dataset.kind}:${el.dataset.id}`;
+      document.querySelectorAll('[data-action="save"]').forEach((b) => {
+        if (`${b.dataset.kind}:${b.dataset.id}` === key) { b.setAttribute('aria-pressed', String(on)); b.textContent = on ? '★' : '☆'; b.title = on ? 'Saved' : 'Save for later'; }
+      });
+      renderTabs();
+      toast(on ? 'Saved' : 'Removed from saved');
+    } else if (action === 'unsave') {
+      delete saved[el.dataset.key];
+      storage.set('techradar:saved', saved);
+      renderTabs(); renderMain();
+    } else if (action === 'clear-saved') {
+      if (state.clearArmed) { saved = {}; storage.set('techradar:saved', saved); state.clearArmed = false; renderTabs(); toast('Saved items cleared'); } else { state.clearArmed = true; }
+      renderMain();
+    } else if (action === 'copy-notes') {
+      copyText(notesText(), `Copied ${Object.keys(saved).length} saved items`);
+    } else if (action === 'copy-topic') {
+      const t = data.topics.find((x) => x.id === el.dataset.id);
+      if (t) copyText([t.label, '', ...t.items.map((i) => `${i.title} (${i.outlet}, ${fmtDate(i.published)})\n${i.link}`)].join('\n'), `Copied ${t.items.length} sources`);
+    } else if (action === 'copy-csv' || action === 'download-csv') {
+      const list = data.products.filter((p) => latestPrice(p) && matches(p.name, p.brand, p.category) && (state.priceCat === 'All' || p.category === state.priceCat));
+      if (action === 'copy-csv') copyText(pricesCsv(list), `Copied ${list.length} prices`);
+      else download(`tech-radar-prices-${String(data.meta.generated_at).slice(0, 10)}.csv`, pricesCsv(list));
+    } else if (action === 'find-product') {
+      e.preventDefault();
+      state.q = el.dataset.name;
+      $('#q').value = state.q;
+      state.launchCat = 'All'; state.launchStatus = 'All';
+      if (location.hash === '#launches') renderMain(); else location.hash = '#launches';
+    }
+  });
+  document.addEventListener('change', (e) => {
+    const action = e.target.dataset && e.target.dataset.action;
+    if (action === 'price-cat') { state.priceCat = e.target.value; renderMain(); $('[data-action="price-cat"]').focus(); }
+    if (action === 'news-outlet') { state.newsOutlet = e.target.value; state.newsLimit = 80; renderMain(); $('[data-action="news-outlet"]').focus(); }
+  });
+  let searchTimer = null;
+  $('#q').addEventListener('input', (e) => {
+    clearTimeout(searchTimer);
+    searchTimer = setTimeout(() => { state.q = e.target.value.trim(); state.newsLimit = 80; if (data && data.meta.generated_at) renderMain(); }, 140);
+  });
+  document.addEventListener('keydown', (e) => {
+    if (e.key === '/' && !/^(INPUT|TEXTAREA|SELECT)$/.test(document.activeElement.tagName)) { e.preventDefault(); $('#q').focus(); }
+  });
+  window.addEventListener('hashchange', () => {
+    state.view = viewFromHash();
+    state.clearArmed = false;
+    if (!data) return;
+    render();
+    try { window.scrollTo(0, 0); } catch (err) { /* not available */ }
+  });
+
+  // ---------- start ----------
+  async function load() {
+    if (window.__TECH_RADAR_DATA__) return window.__TECH_RADAR_DATA__;
+    const res = await fetch(`data/feed.json?v=${Math.floor(Date.now() / 60000)}`, { cache: 'no-store' });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    return res.json();
+  }
+  function normalise(d) {
+    d.meta = d.meta || {};
+    ['topics', 'products', 'news', 'sources'].forEach((k) => { d[k] = Array.isArray(d[k]) ? d[k] : []; });
+    d.products.forEach((p) => { p.prices = p.prices || []; p.articles = p.articles || []; });
+    return d;
+  }
+  (async () => {
+    try {
+      data = normalise(await load());
+    } catch (err) {
+      $('#status-line').textContent = 'Couldn’t load the data file.';
+      $('#main').innerHTML = `<section class="view">${empty('Couldn’t load data/feed.json.', ` (${esc(err.message)}) If you set up the site in the last few minutes, the first update may still be running: open your repository’s Actions tab and wait for a green tick, then reload.`)}</section>`;
+      return;
+    }
+    fmt = makeFormatters(data.meta.region);
+    productIndex = new Map(data.products.map((p) => [p.id, p]));
+    if (data.meta.title) { $('#site-title').textContent = data.meta.title; document.title = data.meta.title; }
+    state.view = viewFromHash();
+    render();
+  })();
+})();
+</script>
+</body>
+</html>

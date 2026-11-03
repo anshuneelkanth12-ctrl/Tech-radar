@@ -1,0 +1,80 @@
+# Tech Radar settings. Edit this file on GitHub (pencil icon) and commit:
+# the next automatic update uses your changes. No code changes needed.
+
+site:
+  title: Tech Radar
+  region: IN               # IN, US or UK: decides which stores the "Shop" links open
+  update_every_hours: 4    # shown on the site; the real schedule is in .github/workflows/update.yml
+  show_images: true        # article thumbnails, loaded from the publishers' own servers
+
+currency_by_region: {IN: INR, US: USD, UK: GBP}
+
+# Search links shown for every product. {q} becomes the product name.
+# These open a store search; nothing is scraped from these stores.
+stores:
+  IN:
+    - {name: Amazon.in, url: "https://www.amazon.in/s?k={q}"}
+    - {name: Flipkart, url: "https://www.flipkart.com/search?q={q}"}
+    - {name: Google Shopping, url: "https://www.google.com/search?udm=28&q={q}"}
+  US:
+    - {name: Amazon, url: "https://www.amazon.com/s?k={q}"}
+    - {name: Best Buy, url: "https://www.bestbuy.com/site/searchpage.jsp?st={q}"}
+    - {name: Google Shopping, url: "https://www.google.com/search?udm=28&q={q}"}
+  UK:
+    - {name: Amazon.co.uk, url: "https://www.amazon.co.uk/s?k={q}"}
+    - {name: Google Shopping, url: "https://www.google.com/search?udm=28&q={q}"}
+
+affiliate:
+  amazon_tag: ""           # optional Amazon Associates tag, e.g. "mychannel-21". Leave empty if unsure.
+
+retention:
+  news_days: 21            # stories older than this are dropped
+  max_news_items: 1200
+  products_days: 120       # products not mentioned for this long are dropped
+  max_products: 600
+
+trending:
+  window_hours: 72         # "Big stories" look at the last 3 days
+  min_outlets: 2           # a story needs this many different outlets to count as big
+
+health:
+  stale_after_days: 5      # a feed that answers but has nothing new for this long is flagged
+  failing_after_runs: 3    # consecutive failed runs before a feed is marked failing
+
+fetch:
+  timeout_seconds: 20
+  parallel: 6
+
+# kind: news (default) | community (Hacker News: shown with points, not in the news list)
+# region: IN = Indian prices and launches, global = everything else
+# aggregator: true = items come from many publishers (each counted as its own outlet)
+sources:
+  # India-focused: launches with Indian prices
+  - {name: Gadgets 360, url: "https://feeds.feedburner.com/gadgets360-latest", region: IN}
+  - {name: 91mobiles, url: "https://www.91mobiles.com/hub/rss-hub.xml", region: IN}
+  - {name: "Google News: Technology (India)", region: IN, aggregator: true,
+     url: "https://news.google.com/rss/headlines/section/topic/TECHNOLOGY?hl=en-IN&gl=IN&ceid=IN:en"}
+
+  # Global tech news, gadgets and reviews
+  - {name: The Verge, url: "https://www.theverge.com/rss/index.xml"}
+  - {name: Engadget, url: "https://www.engadget.com/rss.xml"}
+  - {name: TechCrunch, url: "https://techcrunch.com/feed/"}
+  - {name: Ars Technica, url: "https://feeds.arstechnica.com/arstechnica/index"}
+  - {name: Wired Gear, url: "https://www.wired.com/feed/category/gear/latest/rss"}
+  - {name: GSMArena, url: "https://www.gsmarena.com/rss-news-reviews.php3"}
+  - {name: Android Authority, url: "https://www.androidauthority.com/feed/"}
+  - {name: 9to5Mac, url: "https://9to5mac.com/feed/"}
+  - {name: 9to5Google, url: "https://9to5google.com/feed/"}
+  - {name: "Tom's Hardware", url: "https://www.tomshardware.com/feeds.xml"}
+  - {name: XDA, url: "https://feeds.feedburner.com/xda-developers/ShsH"}
+
+  # Accessory and gadget deals (US prices)
+  - {name: 9to5Toys, url: "https://9to5toys.com/feed/"}
+
+  # What the tech crowd is discussing (front page stories with 100+ points)
+  - {name: Hacker News, url: "https://hnrss.org/frontpage?points=100", kind: community}
+
+  # More you can add the same way (copy a line, change name and url):
+  # - {name: MacRumors, url: "https://feeds.macrumors.com/MacRumors-All"}
+  # - {name: Ars Technica AI, url: "https://arstechnica.com/ai/feed/"}
+  # - {name: A YouTube channel, url: "https://www.youtube.com/feeds/videos.xml?channel_id=CHANNEL_ID"}
